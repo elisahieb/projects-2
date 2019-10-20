@@ -20,6 +20,14 @@
         <param-name>page.size</param-name>
         <param-value>3</param-value>
     </context-param>
+    <context-param>
+        <param-name>validUsername</param-name>
+        <param-value>javauser</param-value>
+    </context-param>
+    <context-param>
+        <param-name>validpassword</param-name>
+        <param-value>javauser</param-value>
+    </context-param>
     <listener>
         <description>ServletContextListener</description>
         <listener-class>edu.acc.jee.hubbub.StartupListener</listener-class>

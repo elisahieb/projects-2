@@ -4,6 +4,7 @@ import edu.acc.jee.hubbub.domain.DataService;
 import edu.acc.jee.hubbub.domain.Post;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,7 +25,8 @@ public class FrontController extends HttpServlet {
         switch (action) {
             default:
             case "guest": destination = guest(request); break;
-            // case "login": destination = login(request); break;
+            case "login": destination = login(request); break;
+            case "user": destination = user(request); break;
             // case "logout": destination = logout(request); break;
             // case "join": destination = join(request); break;
             // case "timeline": destination = timeline(request); break;
@@ -94,6 +96,39 @@ public class FrontController extends HttpServlet {
         List<Post> posts = getDataService().findPostsByPage(0, pageSize);
         request.setAttribute("posts", posts);
         return "guest";
+    }
+    
+    private String login(HttpServletRequest request) {
+        if (request.getSession().getAttribute("user") != null)
+            return "redirect:user";
+        
+        if (request.getMethod().equalsIgnoreCase("GET"))
+            return "login";
+        
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        UserDTO userDTO = new UserDTO(username, password);
+        Set<String> errors = UserValidator.validate(userDTO);
+        if(!errors.isEmpty()) {
+            request.setAttribute("erros",errors);
+            return "login";
+        }
+        
+        String validUsername = this.getServletContext().getInitParameter("validUsername");
+        String validPassword = this.getServletContext().getInitParameter("validPassword");
+        if (!UserAuthenticator.authenticate(userDTO, validUsername, validPassword)) {
+            request.setAttribute("flash", "Access Denied");
+            return "login";
+        }
+        
+        request.getSession().setAttribute("user", userDTO);
+        return "user";
+    }
+    
+    private String user(HttpServletRequest request) {
+        if (request.getSession().getAttribute("user") == null)
+            return "redirect:login";
+        else return "user";
     }
 
     @SuppressWarnings("unchecked")
