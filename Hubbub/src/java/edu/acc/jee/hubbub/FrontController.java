@@ -30,6 +30,8 @@ public class FrontController extends HttpServlet {
             case "join": destination = join(request); break;
             case "timeline": destination = timeline(request); break;
             case "post": destination = post(request); break;
+            case "profile": destination = profile(request); break;
+            case "updateProfile": destination = updateProfile(request); break;
         }
         
         String view;
@@ -181,6 +183,27 @@ public class FrontController extends HttpServlet {
         }
         this.getDataService().addPost(content, user);
         return redirectTag + "timeline";
+    }
+
+    private String profile(HttpServletRequest request) {
+        User user = this.getSessionUser(request);
+        if (user == null) return redirectTag = "guest";
+        if (request.getMethod().equalsIgnoreCase("GET")) return "profile";
+        return "profile";
+    }
+    
+    private String updateProfile(HttpServletRequest request) {
+        User user = this.getSessionUser(request);
+        if (user == null) return redirectTag = "guest";
+        if (request.getMethod().equalsIgnoreCase("GET")) return "updateProfile";
+        String firstname = request.getParameter("firstname");
+        String lastname = request.getParameter("lastname");
+        String email = request.getParameter("email");
+        String timezone = request.getParameter("timezone");
+        String biography = request.getParameter("biography");
+        //String mime = request.getParameter("mime");
+        //clean data, but not sure how since the fields are allowed to be null
+        return redirectTag = "profile";
     }
     
     private boolean loggedIn(HttpServletRequest request) {
