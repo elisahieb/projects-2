@@ -2,8 +2,10 @@ package edu.acc.jee.hubbub;
 
 import edu.acc.jee.hubbub.domain.DataService;
 import edu.acc.jee.hubbub.domain.Post;
+import edu.acc.jee.hubbub.domain.Profile;
 import edu.acc.jee.hubbub.domain.User;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -31,7 +33,8 @@ public class FrontController extends HttpServlet {
             case "timeline": destination = timeline(request); break;
             case "post": destination = post(request); break;
             case "profile": destination = profile(request); break;
-            case "updateProfile": destination = updateProfile(request); break;
+            //case "updateProfile": destination = updateProfile(request); break;
+            case "comments": destination = comments(request); break;
         }
         
         String view;
@@ -184,15 +187,55 @@ public class FrontController extends HttpServlet {
         this.getDataService().addPost(content, user);
         return redirectTag + "timeline";
     }
+    
+    private String comments(HttpServletRequest request) {
+        if (!loggedIn(request)) return redirectTag + "guest";
+        int postId = Integer.parseInt(request.getParameter("post"));
+        Post post = getDataService().findPostById(postId);
+        if (post == null) {
+            request.setAttribute("flash", "Blurb&trade; ID not found: " + postId);
+            return "comments";
+        }
+        request.setAttribute("post", post);
+        if (request.getMethod().equalsIgnoreCase("GET")) return "comments";
+        User author = getSessionUser(request);
+        String content = request.getParameter("content");
+        if (content != null || content.length() > 0 && content.length() <= 70)
+            this.getDataService().addComment(author, post, content);
+        else request.setAttribute("flash", "Your comment must have content.");
+        return "comments";
+    }
 
     private String profile(HttpServletRequest request) {
-        User user = this.getSessionUser(request);
-        if (user == null) return redirectTag = "guest";
-        if (request.getMethod().equalsIgnoreCase("GET")) return "profile";
+        if (!loggedIn(request)) return redirectTag + "guest";
+        String forName = request.getParameter("for");
+        User target = getDataService().findUserByUsername(forName);
+        //request.setAttribute("timeZones", getTimeZones());
+        if (target == null) {
+            request.setAttribute("flash", "No such Bub&trade;: " + forName);
+            return "profile";
+        }
+        if (request.getMethod().equalsIgnoreCase("GET")) {
+            request.setAttribute("target", target);
+            return "profile";
+        }
+        //POST request
+        User user = getSessionUser(request);
+        if (!user.equals(target)) return redirectTag + "timeline";
+        Profile temp = new Profile();
+        temp.setFirstName(request.getParameter("firstName"));
+        temp.setLastName(request.getParameter("lastName"));
+        temp.setEmail(request.getParameter("email"));
+        temp.setTimeZone(request.getParameter("timezone"));
+        temp.setBiography(request.getParameter("biography"));
+        boolean ok = getDataService().updateProfileFor(user,temp);
+        request.setAttribute("target", user);
+        if (ok) request.setAttribute("success", "Deets&trade; Updated");
+        else request.setAttribute("flash", "Error updating your Deets&trade;.");
         return "profile";
     }
     
-    private String updateProfile(HttpServletRequest request) {
+    /*private String updateProfile(HttpServletRequest request) {
         User user = this.getSessionUser(request);
         if (user == null) return redirectTag = "guest";
         if (request.getMethod().equalsIgnoreCase("GET")) return "updateProfile";
@@ -204,7 +247,7 @@ public class FrontController extends HttpServlet {
         //String mime = request.getParameter("mime");
         //clean data, but not sure how since the fields are allowed to be null
         return redirectTag = "profile";
-    }
+    }*/
     
     private boolean loggedIn(HttpServletRequest request) {
         return getSessionUser(request) != null;
@@ -214,5 +257,9 @@ public class FrontController extends HttpServlet {
     private User getSessionUser(HttpServletRequest request) {
         return (User)request.getSession().getAttribute("user");
     }
+    
+    /*private List<String> getTimeZones() {
+        return ZoneId.SHORT_IDS
+    }*/
     
 }

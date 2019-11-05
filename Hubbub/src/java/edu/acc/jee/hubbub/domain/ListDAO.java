@@ -66,6 +66,14 @@ public class ListDAO implements DataService {
         posts.add(post);
         return post;
     }
+    
+    @Override
+    public Post findPostById(int id) {
+        for (Post p : posts)
+            if (p.getId() == id)
+                return p;
+        return null;
+    }
 
     @Override
     public List<Post> findPostsByPage(int offset, int limit) {
@@ -75,6 +83,23 @@ public class ListDAO implements DataService {
                 .skip(offset)
                 .limit(limit)
                 .collect(Collectors.toList());
+    }
+    
+    @Override
+    public boolean updateProfileFor(User user, Profile changed) {
+        if (!changed.isValid()) return false;
+        user.getProfile().setFirstName(changed.getFirstName());
+        user.getProfile().setLastName(changed.getLastName());
+        user.getProfile().setEmail(changed.getEmail());
+        user.getProfile().setTimeZone(changed.getTimeZone());
+        if (changed.getBiography() != null)
+            user.getProfile().setBiography(changed.getBiography()
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("'", "&apos;")
+                .replace("\"", "&quot;")
+                .replace("%", "&#37;"));
+        return true;
     }
     
     @Override
@@ -92,15 +117,4 @@ public class ListDAO implements DataService {
         return comment;
     }
     
-    @Override
-    public List<Comment> findCommentsByTargetAndPage(Post target, int offset, int limit) {
-        return target.getComments()
-                .stream()
-                .sorted((a,b) -> b.getCommented().compareTo(a.getCommented()))
-                .skip(offset)
-                .limit(limit)
-                .collect(Collectors.toList());        
-    }
 }
-
-//blank comment
