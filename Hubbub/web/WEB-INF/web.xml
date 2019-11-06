@@ -21,11 +21,23 @@
         <param-value>3</param-value>
     </context-param>
     <context-param>
-        <param-name>validUsername</param-name>
+        <param-name>db.brand</param-name>
+        <param-value>derby</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.host</param-name>
+        <param-value>localhost</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.database</param-name>
+        <param-value>hubbub</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.user</param-name>
         <param-value>javauser</param-value>
     </context-param>
     <context-param>
-        <param-name>validpassword</param-name>
+        <param-name>db.pass</param-name>
         <param-value>javauser</param-value>
     </context-param>
     <listener>

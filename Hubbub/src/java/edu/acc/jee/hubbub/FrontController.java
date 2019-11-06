@@ -7,6 +7,8 @@ import edu.acc.jee.hubbub.domain.User;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -210,7 +212,7 @@ public class FrontController extends HttpServlet {
         if (!loggedIn(request)) return redirectTag + "guest";
         String forName = request.getParameter("for");
         User target = getDataService().findUserByUsername(forName);
-        //request.setAttribute("timeZones", getTimeZones());
+        request.setAttribute("timeZones", getTimeZones());
         if (target == null) {
             request.setAttribute("flash", "No such Bub&trade;: " + forName);
             return "profile";
@@ -219,17 +221,16 @@ public class FrontController extends HttpServlet {
             request.setAttribute("target", target);
             return "profile";
         }
-        //POST request
         User user = getSessionUser(request);
         if (!user.equals(target)) return redirectTag + "timeline";
         Profile temp = new Profile();
         temp.setFirstName(request.getParameter("firstName"));
         temp.setLastName(request.getParameter("lastName"));
         temp.setEmail(request.getParameter("email"));
-        temp.setTimeZone(request.getParameter("timezone"));
+        temp.setTimeZone(request.getParameter("timeZone"));
         temp.setBiography(request.getParameter("biography"));
-        boolean ok = getDataService().updateProfileFor(user,temp);
-        request.setAttribute("target", user);
+        boolean ok = getDataService().updateProfileFor(user, temp);
+        request.setAttribute("target", user);        
         if (ok) request.setAttribute("success", "Deets&trade; Updated");
         else request.setAttribute("flash", "Error updating your Deets&trade;.");
         return "profile";
@@ -258,8 +259,12 @@ public class FrontController extends HttpServlet {
         return (User)request.getSession().getAttribute("user");
     }
     
-    /*private List<String> getTimeZones() {
-        return ZoneId.SHORT_IDS
-    }*/
+    private List<String> getTimeZones() {
+        return ZoneId.SHORT_IDS.values()
+                .stream()
+                .filter((id) -> !id.startsWith("-"))
+                //.sorted()
+                .collect(Collectors.toList());
+    }
     
 }

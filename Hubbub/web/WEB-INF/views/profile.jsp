@@ -74,9 +74,10 @@
                     <select class="w3-select" ${disabled} name="timeZone">
                         <option value=""></option>
                         <c:forEach var="tz" items="${timeZones}">
-                            <option value="${tz}"${tz}</option>
+                        <c:set var="selected" value="${tz eq target.profile.timeZone ? 'selected' : ''}"/>
+                        <option value="${tz}" ${selected}>${tz}</option>
                         </c:forEach>
-                    </select>
+                    </select>                    
                     <label>Time Zone</label>
                 </p>
                 <hr/>
@@ -92,18 +93,13 @@
                         </button>
                     </p>
                 </c:if>
-            </form>
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            </form>      
     </body>
+    <script type="text/javascript">
+        function charcountupdate(str) {
+            var lng = str.length;
+            document.getElementById("charcount").innerHTML = 512 - lng;
+        }
+        charcountupdate("");
+    </script>
 </html>
